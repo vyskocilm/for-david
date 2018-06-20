@@ -56,46 +56,12 @@ sub import_phones (string connection_url, string filename)
     );
 
     while (csv.next ()) {
-        /*
-
-        MVY: I gave up on how to solve the duplicates in Qore This is NOT nice,
-            because it means a transaction per line and SLOOW. However I did not
-            find a way how to solve the duplicated while having constraints in DB
-            when using InboundTableMapper
-
-            with using "upsert" : True I had issued with cust_id
-
-            Alternative wouls be to track it on application level as I already have
-            cust_nmbr_map, however this is NOT what I wanted to do.
-            Plus I have learned exception handling in qore :-)
-
-        */
-        try {
+        if (!cust_nmbr_map {csv."CustNmbr"}) {
             hash ret = customers_mapper.insertRow (csv.getRecord ());
-            customers.commit ();
             cust_nmbr_map {csv."CustNmbr"} = ret."cust_id";
-        }
-        catch (exc) {
-            /*
-            MVY: I assume error is duplicate error, but did not implemented checks
-
-            This is one time script and SQL error would be reported via customer_inventory_mapper
-            anyway
-
-            ... I said this is not the best approach I can have, normally I would do
-            INSERT ... (cust_num, cust_name) VALUES (); but can't find the way how to skip cust_id
-            */
-
-            /*
-            printf ("exc: err=%s, desc=%s, arg=%s",
-                    exc.err,
-                    exc.desc,
-                    exc.arg);
-            */
-            customers_mapper.rollback ();
+            customers.commit ();
         }
 
-        /* add entry to customer_inventory table */
         customer_inventory_mapper.insertRow (csv.getRecord ());
     }
     customers.commit ();

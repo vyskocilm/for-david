@@ -12,7 +12,7 @@ DROP TABLE customers;
 
 CREATE TABLE customers (
     cust_id INT PRIMARY KEY,
-    cust_num INT NOT NULL UNIQUE,            --CustNmbr
+    cust_num INT NOT NULL,             --CustNmbr
     cust_name VARCHAR (100) NOT NULL); --CustomerName;
 
 CREATE SEQUENCE customers_id OWNED BY customers.cust_id;
